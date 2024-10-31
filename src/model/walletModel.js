@@ -12,6 +12,7 @@ const walletSchema = new Schema(
     },
     currency: {
       type: String,
+      enum: ["BRL", "USD", "BTC"],
       required: true,
     },
   },

@@ -1,14 +1,35 @@
-import User from "../models/user-model.js";
-import {
-  generateAcesssToken,
-  verifyAcessToken,
-} from "../services/jwt-service.js";
+import User from "../model/userModel.js";
+import bcrypt from "bcrypt";
+import { generateToken } from "../services/jwtService.js";
+
+export const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    const user = await User.findOne({
+      email,
+      password,
+    }).exec();
+
+    if (user && user.isValidPassword(password)) {
+      const token = generateToken(user);
+      res.json(token);
+    } else {
+      res.status(404).json({
+        error: "Email or password invalid.",
+      });
+    }
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+};
 
 export const signup = async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await User.create({ email, password });
-    const token = jwtServices.generateAcesssToken(user);
+
+    const token = generateToken(user);
 
     res.status(201).json(token);
   } catch (error) {
@@ -41,28 +62,6 @@ export const show = async (req, res) => {
     const content = await User.findById(req.params.id).exec();
 
     res.json(content);
-  } catch (error) {
-    res.status(500).send(error.message);
-  }
-};
-
-export const login = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    const user = await User.findOne({
-      email,
-      password,
-    }).exec();
-
-    if (user && user.isValidPassword(password)) {
-      const token = jwtServices.generateAcesssToken(user);
-      res.json(token);
-    } else {
-      res.status(404).json({
-        error: "Email or password invalid.",
-      });
-    }
   } catch (error) {
     res.status(500).send(error.message);
   }

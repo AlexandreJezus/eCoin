@@ -1,13 +1,15 @@
 import { Schema, model } from "mongoose";
 
-const walletSchema = new Schema(
+const transactionSchema = new Schema(
   {
     walletFrom: {
       type: Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Transaction",
+      required: true,
     },
     walletTo: {
       type: Schema.Types.ObjectId,
+      ref: "Transaction",
       required: true,
     },
     ammount: {
@@ -34,6 +36,6 @@ const walletSchema = new Schema(
   }
 );
 
-const Wallet = model("Wallet", walletSchema);
+const Transaction = model("Transaction", transactionSchema);
 
-export default Wallet;
+export default Transaction;
