@@ -7,12 +7,14 @@ import {
   destroy,
 } from "../controller/transactionController.js";
 import authenticator from "../middleware/authenticator.js";
+import authorizer from "../middleware/authorizer.js";
 
 const router = Router();
 
 //Public
 
 router.use(authenticator);
+router.use(authorizer("ADMINISTRATOR"));
 
 //Private
 

@@ -8,13 +8,14 @@ import {
   getBalance,
 } from "../controller/walletController.js";
 import authenticator from "../middleware/authenticator.js";
+import authorizer from "../middleware/authorizer.js";
 
 const router = Router();
 
 //Public
 
 router.use(authenticator);
-
+router.use(authorizer("ADMINISTRATOR"));
 //Private
 
 router.get("/", index);
