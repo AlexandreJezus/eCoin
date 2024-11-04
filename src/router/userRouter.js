@@ -19,7 +19,7 @@ router.post("/signup", signup);
 
 router.use(authenticator);
 
-router.use(authorizer(["ADMINISTRATOR"]));
+router.use(authorizer("ADMINISTRATOR"));
 
 router.get("/", index);
 router.get("/:id", show);

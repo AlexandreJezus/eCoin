@@ -16,4 +16,4 @@ app.use("/transaction", transactionRouter);
 app.use("/wallet", walletRouter);
 app.use("/user", userRouter);
 
-app.listen(process.env.DB, () => console.log("Server is running"));
+app.listen(process.env.PORT, () => console.log("Server is running"));

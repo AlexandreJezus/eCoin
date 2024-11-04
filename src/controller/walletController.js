@@ -1,5 +1,5 @@
 import Wallet from "../model/walletModel.js";
-import { generateToken } from "../services/jwtService.js";
+import jwtServices from "../services/jwtService.js";
 
 export const store = async (req, res) => {
   try {

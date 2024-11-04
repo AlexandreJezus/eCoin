@@ -1,8 +1,13 @@
-export default (roles = []) =>
-  (req, res, next) => {
-    if (roles.includes(req.user.role)) {
-      next();
+export default (Role) => async (req, res, next) => {
+  try {
+    if (req.user.role !== Role) {
+      res
+        .status(403)
+        .json({ message: "Acesso negado, permissões insuficientes." });
     } else {
-      res.sendStatus(403);
+      next();
     }
-  };
+  } catch (error) {
+    res.status(401).json({ message: "Acesso negado, token inválido." });
+  }
+};
