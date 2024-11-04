@@ -1,13 +1,35 @@
 import Transaction from "../model/transactionModel.js";
+import Wallet from "../model/walletModel.js";
 import jwtServices from "../services/jwtService.js";
 
-export const store = async (req, res) => {
+export const store = async (req, resp) => {
   try {
-    const content = await Transaction.create(req.body);
+    const { walletFrom, walletTo, ammount, type } = req.body;
 
-    res.status(201).json(content);
+    // Verifica se a transação é uma transferência
+    if (type === "transfer") {
+      // Encontra as carteiras envolvidas
+      const fromWallet = await Wallet.findById(walletFrom);
+      const toWallet = await Wallet.findById(walletTo);
+
+      // Verifica se a carteira de origem tem saldo suficiente
+      if (fromWallet.balance < ammount) {
+        return resp.status(400).json({ error: "Saldo insuficiente." });
+      }
+
+      // Atualiza os saldos das carteiras
+      fromWallet.balance -= ammount; // Diminui o saldo da carteira de origem
+      toWallet.balance += ammount; // Aumenta o saldo da carteira de destino
+
+      await fromWallet.save(); // Salva as alterações da carteira de origem
+      await toWallet.save(); // Salva as alterações da carteira de destino
+    }
+
+    // Cria a transação
+    const content = await Transaction.create(req.body);
+    resp.status(201).json(content);
   } catch (error) {
-    res.status(500).send(error.message);
+    resp.status(400).json(error);
   }
 };
 
@@ -23,7 +45,9 @@ export const index = async (req, res) => {
 
 export const show = async (req, res) => {
   try {
-    const content = await Transaction.findById(req.params.id).exec();
+    const content = await Transaction.findById(req.params.id)
+      .populate(["walletFrom", "walletTo"]) // Popula as carteiras associadas
+      .exec();
 
     res.json(content);
   } catch (error) {
@@ -31,66 +55,25 @@ export const show = async (req, res) => {
   }
 };
 
-export const login = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    const user = await Transaction.findOne({
-      email,
-      password,
-    }).exec();
-
-    if (user && user.isValidPassword(password)) {
-      const token = generateToken(user);
-      res.json(token);
-    } else {
-      res.status(404).json({
-        error: "Email or password invalid.",
-      });
-    }
-  } catch (error) {
-    res.status(500).send(error.message);
-  }
-};
-
 export const update = async (req, res) => {
   try {
-    const user = req.user._id;
-    const { text } = req.body;
-
-    const content = await Post.findOneAndUpdate(
-      {
-        _id: req.params.id,
-        user,
-      },
-      { text }
-    ).exec();
-
-    if (content) {
-      res.json(content);
-    } else {
-      res.sendStatus(403);
-    }
+    const content = await Transaction.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    ) // Retorna a transação atualizada
+      .exec();
+    res.json(content);
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(400).send(error.message);
   }
 };
 
-export const destroy = async (req, res) => {
+export const destroy = async (req, resp) => {
   try {
-    const user = req.user._id;
-
-    const content = await Post.findOneAndDelete({
-      _id: req.params.id,
-      user,
-    }).exec();
-
-    if (content) {
-      res.json(content);
-    } else {
-      res.sendStatus(403);
-    }
+    await Transaction.findByIdAndDelete(req.params.id).exec();
+    resp.status(204).json(); // Retorna status 204 sem conteúdo
   } catch (error) {
-    res.status(500).send(error.message);
+    resp.status(400).json(error);
   }
 };

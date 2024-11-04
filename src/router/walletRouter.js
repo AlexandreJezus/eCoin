@@ -5,6 +5,7 @@ import {
   store,
   update,
   destroy,
+  getBalance,
 } from "../controller/walletController.js";
 import authenticator from "../middleware/authenticator.js";
 
@@ -18,6 +19,7 @@ router.use(authenticator);
 
 router.get("/", index);
 router.get("/:id", show);
+router.get("/balance/:userId", getBalance); // Consultar saldo de uma carteira por userId
 router.post("/", store);
 router.put("/:id", update);
 router.delete("/:id", destroy);

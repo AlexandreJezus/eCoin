@@ -1,3 +1,4 @@
+import Transaction from "../model/transactionModel.js";
 import Wallet from "../model/walletModel.js";
 import jwtServices from "../services/jwtService.js";
 
@@ -55,42 +56,35 @@ export const login = async (req, res) => {
 
 export const update = async (req, res) => {
   try {
-    const user = req.user._id;
-    const { text } = req.body;
-
-    const content = await Post.findOneAndUpdate(
-      {
-        _id: req.params.id,
-        user,
-      },
-      { text }
-    ).exec();
-
-    if (content) {
-      res.json(content);
-    } else {
-      res.sendStatus(403);
-    }
+    const content = await Wallet.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    }).exec();
+    res.json(content);
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(400).json(error.message);
   }
 };
 
-export const destroy = async (req, res) => {
+export const destroy = async (req, resp) => {
   try {
-    const user = req.user._id;
+    await Wallet.findByIdAndDelete(req.params.id).exec();
+    resp.status(204).json(); // Retorna status 204 sem conteúdo
+  } catch (error) {
+    resp.status(400).json(error);
+  }
+};
 
-    const content = await Post.findOneAndDelete({
-      _id: req.params.id,
-      user,
-    }).exec();
-
+export const getBalance = async (req, res) => {
+  try {
+    const content = await Wallet.findOne({ userId: req.params.userId }).exec();
     if (content) {
-      res.json(content);
+      res.json({ balance: content.balance });
     } else {
-      res.sendStatus(403);
+      res
+        .status(404)
+        .json({ error: "Carteira não encontrada para este usuário." });
     }
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(400).json(error);
   }
 };
